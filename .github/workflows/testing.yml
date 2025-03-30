@@ -1,0 +1,46 @@
+name: Run k6 Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-k6-tests:
+    runs-on: ubuntu-latest  # Use GitHub-hosted runner
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install k6
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gnupg software-properties-common
+        curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
+        echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install -y k6
+
+    - name: Run k6 tests
+      env:
+        K6_PROJECT_ID: ${{ secrets.K6_PROJECT_ID }}
+        K6_API_TOKEN: ${{ secrets.K6_API_TOKEN }}
+      run: |
+        k6 run --out cloud load-test.js
+
+    - name: Run k6 tests
+      env:
+        K6_PROJECT_ID: ${{ secrets.K6_PROJECT_ID }}
+        K6_API_TOKEN: ${{ secrets.K6_API_TOKEN }}
+      run: |
+        k6 run --out json=data.json load-test.js
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: k6-test-data
+        path: data.json
