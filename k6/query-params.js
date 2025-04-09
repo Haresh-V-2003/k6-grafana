@@ -4,27 +4,23 @@ import { SharedArray } from 'k6/data';
 
 export let options = {
   vus: 3,
-  iterations: 3,
+  iterations: 9,
 };
 
-// Load query param data from file
 const payloads = new SharedArray('Payloads', function () {
   return JSON.parse(open('./payloads.json'));
 });
 
 export default function () {
-  const index = (__VU - 1) % payloads.length;  // __VU is 1-based
-
+  const index = __ITER % payloads.length;
   const data = payloads[index];
 
-  // Dynamically build URL with query parameters
   const url = `https://jsonplaceholder.typicode.com/posts?sysID=${data.sysID}&prodID=${data.prodID}`;
 
-  // This can be extended as needed — sample payload
   const payload = JSON.stringify({
     title: `title-${data.sysID}`,
     body: `body-${data.prodID}`,
-    userId: data.sysID,  // using sysID as userId here for illustration
+    userId: data.sysID
   });
 
   const headers = {
@@ -40,8 +36,7 @@ export default function () {
     'title matches': (r) => r.body.includes(`"title": "title-${data.sysID}"`)
   });
 
-  console.log(`URL: ${url}`);
-  console.log(res.body);
+  console.log(`Used: sysID=${data.sysID}, prodID=${data.prodID}`);
 }
 
 
