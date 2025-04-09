@@ -43,3 +43,8 @@ export default function () {
   console.log(`URL: ${url}`);
   console.log(res.body);
 }
+
+
+//K6_TLS_CERT=client-cert.pem \
+//K6_TLS_KEY=client-key.pem \
+//k6 run script.js
